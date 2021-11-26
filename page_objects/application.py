@@ -1,32 +1,33 @@
 from playwright.sync_api import Playwright
+from page_objects.test_cases import TestCases
 
 
 class App:
-    def __init__(self, playwright: Playwright):
-        self.browser = playwright.chromium.launch(headless=False)
+    def __init__(self, playwright: Playwright, base_url: str, headless=False):
+        self.browser = playwright.chromium.launch(headless=headless)
         self.context = self.browser.new_context()
         self.page = self.context.new_page()
-        self.page.goto("http://127.0.0.1:8000/login/?next=/")
+        self.base_url = base_url
+        self.test_cases = TestCases(self.page)
 
-    def login(self):
-        self.page.fill("input[name=\"username\"]", "alice")
-        self.page.fill("input[name=\"password\"]", "Qamania123")
+    def goto(self, endpoint: str, use_base_url=True):
+        if use_base_url:
+            self.page.goto(self.base_url + endpoint)
+        else:
+            self.page.goto(endpoint)
+
+    def navigate_to(self, menu: str):
+        self.page.click(f"css=header >> text={menu}")
+
+    def login(self, login: str, password: str):
+        self.page.fill("input[name=\"username\"]", login)
+        self.page.fill("input[name=\"password\"]", password)
         self.page.click("text=Login")
 
-    def create_test(self):
-        self.page.click("text=Create new test")
-        self.page.fill("input[name=\"name\"]", "hello")
-        self.page.fill("textarea[name=\"description\"]", "world")
+    def create_test(self, test_name: str, test_description: str):
+        self.page.fill("input[name=\"name\"]", test_name)
+        self.page.fill("textarea[name=\"description\"]", test_description)
         self.page.click("input:has-text(\"Create\")")
-
-    def open_test(self):
-        self.page.click("text=Test Cases")
-
-    def check_test(self):
-        assert self.page.query_selector('//td[text()="hello"]') is not None
-
-    def delete_test(self):
-        self. page.click("text=26 hello world alice Norun None PASS FAIL Details Delete >> :nth-match(button, 4)")
 
     def close(self):
         self.page.close()
