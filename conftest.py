@@ -3,7 +3,7 @@ import os.path
 from pytest import fixture
 from playwright.sync_api import Playwright, sync_playwright
 from page_objects.application import App
-import settings
+from settings import *
 import json
 
 
@@ -22,7 +22,7 @@ def desktop_app(get_playwright, request):
     # conditions if use addoption
     # conditions if use json config
     base_url = request.config.getoption('--base_url')
-    app = App(get_playwright, base_url=base_url)
+    app = App(get_playwright, base_url=base_url, **BROWSER_OPTIONS)
     # conditions if use settings.py
     # app = App(get_playwright,  base_url=settings.BASE_URL)
     app.goto('/')
@@ -39,6 +39,33 @@ def desktop_app_auth(desktop_app, request):
     yield desktop_app
 
 
+@fixture(scope='session')
+def mobile_app(get_playwright, request):
+    # conditions if use addoption
+    # base_url = request.config.getoption('--base_url')
+    # conditions if use getini
+    # base_url = request.config.getini('base_url')
+    # conditions if use addoption
+    # conditions if use json config
+    base_url = request.config.getoption('--base_url')
+    device = request.config.getoption('--device')
+    app = App(get_playwright, base_url=base_url, device=device, **BROWSER_OPTIONS)
+    # conditions if use settings.py
+    # app = App(get_playwright,  base_url=settings.BASE_URL)
+    app.goto('/')
+    yield app
+    app.close()
+
+
+@fixture(scope='session')
+def mobile_app_auth(mobile_app, request):
+    secure = request.config.getoption('--secure')
+    config = load_config(secure)
+    mobile_app.goto("/login")
+    mobile_app.login(**config)
+    yield mobile_app
+
+
 def pytest_addoption(parser):
     # addoption
     parser.addoption('--base_url', action='store', default='http://127.0.0.1:8000')
@@ -46,6 +73,7 @@ def pytest_addoption(parser):
     # parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
     # json config
     parser.addoption('--secure', action='store', default='secure.json')
+    parser.addoption('--device', action='store', default='')
 
 
 def load_config(file):
