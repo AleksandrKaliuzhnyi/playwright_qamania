@@ -13,7 +13,7 @@ def get_playwright():
         yield playwright
 
 
-@fixture(scope='session', params=['chromium', 'firefox', 'webkit'], ids=['chromium', 'firefox', 'webkit'])
+@fixture(scope='session', params=['chromium']) # 'firefox', 'webkit'], ids=['chromium', 'firefox', 'webkit'])
 def get_browser(get_playwright, request):
     browser = request.param
     headless = request.config.getini('headless')
