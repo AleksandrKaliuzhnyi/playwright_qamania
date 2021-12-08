@@ -1,3 +1,4 @@
+import logging
 import json
 import os.path
 from pytest import fixture
@@ -6,6 +7,12 @@ from page_objects.application import App
 from settings import *
 import json
 
+
+@fixture(autouse=True, scope='session')
+def preconditions():
+    logging.info('Preconditions started')
+    yield
+    logging.info('Postconditions started')
 
 @fixture(scope='session')
 def get_playwright():
