@@ -6,6 +6,7 @@ from playwright.sync_api import Playwright, sync_playwright
 from page_objects.application import App
 from settings import *
 import json
+from helpers.web_service import WebService
 
 
 @fixture(autouse=True, scope='session')
@@ -13,6 +14,18 @@ def preconditions():
     logging.info('Preconditions started')
     yield
     logging.info('Postconditions started')
+
+
+@fixture(scope='session')
+def get_web_service(request):
+    base_url = request.config.getoption('--base_url')
+    secure = request.config.getoption('--secure')
+    config = load_config(secure)
+    web = WebService(base_url)
+    web.login(**config)
+    yield web
+    web.close()
+
 
 @fixture(scope='session')
 def get_playwright():
