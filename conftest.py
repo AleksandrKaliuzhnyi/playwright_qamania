@@ -7,6 +7,7 @@ from page_objects.application import App
 from settings import *
 import json
 from helpers.web_service import WebService
+from helpers.db import DataBase
 
 
 @fixture(autouse=True, scope='session')
@@ -70,6 +71,14 @@ def desktop_app(get_browser, request):
 
 
 @fixture(scope='session')
+def get_db(request):
+    path = request.config.getini('db_path')
+    db = DataBase(path)
+    yield db
+    db.close()
+
+
+@fixture(scope='session')
 def desktop_app_auth(desktop_app, request):
     secure = request.config.getoption('--secure')
     config = load_config(secure)
@@ -119,6 +128,7 @@ def pytest_addoption(parser):
     parser.addoption('--secure', action='store', default='secure.json')
     parser.addoption('--device', action='store', default='')
     parser.addoption('--browser', action='store', default='chromium')
+    parser.addini('db_path', help='path to sql db file', default='E:\\Python\\TestMe\\db.sqlite3')
     parser.addini('headless', help='run tests in headless mode', default='False')
 
 
