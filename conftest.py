@@ -23,7 +23,7 @@ def get_web_service(request):
     secure = request.config.getoption('--secure')
     config = load_config(secure)
     web = WebService(base_url)
-    web.login(**config)
+    web.login(**config['users']['UserRole1'])
     yield web
     web.close()
 
@@ -83,8 +83,20 @@ def desktop_app_auth(desktop_app, request):
     secure = request.config.getoption('--secure')
     config = load_config(secure)
     desktop_app.goto("/login")
-    desktop_app.login(**config)
+    desktop_app.login(**config['users']['UserRole1'])
     yield desktop_app
+
+
+@fixture(scope='session')
+def desktop_app_bob(get_browser, request):
+    base_url = request.config.getini('base_url')
+    secure = request.config.getoption('--secure')
+    config = load_config(secure)
+    app = App(get_browser, base_url=base_url, **BROWSER_OPTIONS)
+    app.goto('/login')
+    app.login(**config['users']['UserRole2'])
+    yield app
+    app.close()
 
 
 @fixture(scope='session', params=['iPhone 11', 'Pixel 2'], ids=['iPhone 11', 'Pixel 2'])
@@ -115,7 +127,7 @@ def mobile_app_auth(mobile_app, request):
     secure = request.config.getoption('--secure')
     config = load_config(secure)
     mobile_app.goto("/login")
-    mobile_app.login(**config)
+    mobile_app.login(**config['users']['UserRole1'])
     yield mobile_app
 
 
@@ -123,7 +135,7 @@ def pytest_addoption(parser):
     # addoption
     parser.addoption('--base_url', action='store', default='http://127.0.0.1:8000')
     # addini
-    # parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
+    parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
     # json config
     parser.addoption('--secure', action='store', default='secure.json')
     parser.addoption('--device', action='store', default='')
