@@ -26,6 +26,7 @@ def test_new_testcase_db(desktop_app_auth, name, description, get_db):
     desktop_app_auth.test_cases.delete_test_by_name(name)
 
 
+@mark.parametrize(**ddt)
 def test_new_testcase(desktop_app_auth, name, description):
     desktop_app_auth.navigate_to('Create new test')
     desktop_app_auth.create_test(name, description)

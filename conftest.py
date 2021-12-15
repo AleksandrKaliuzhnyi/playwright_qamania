@@ -1,5 +1,7 @@
 import logging
 import json
+import allure
+from pytest import fixture, hookimpl
 import os.path
 from pytest import fixture
 from playwright.sync_api import Playwright, sync_playwright
@@ -19,7 +21,7 @@ def preconditions():
 
 @fixture(scope='session')
 def get_web_service(request):
-    base_url = request.config.getoption('--base_url')
+    base_url = request.config.getini('base_url')
     secure = request.config.getoption('--secure')
     config = load_config(secure)
     web = WebService(base_url)
@@ -131,15 +133,26 @@ def mobile_app_auth(mobile_app, request):
     yield mobile_app
 
 
+@hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    result = outcome.get_result()
+    setattr(item, f'result_{result.when}', result)
+
+
+@fixture(scope='function', autouse=True)
+def make_screenshots(request):
+    yield
+    if request.node.result_call.failed:
+        for arg in request.node.funcargs.values():
+            if isinstance(arg, App):
+                allure.attach(body=arg.page.screenshot(), name='screenshot', attachment_type=allure.attachment_type.PNG)
+
+
 def pytest_addoption(parser):
-    # addoption
     parser.addoption('--base_url', action='store', default='http://127.0.0.1:8000')
-    # addini
     parser.addini('base_url', help='base url of site under test', default='http://127.0.0.1:8000')
-    # json config
     parser.addoption('--secure', action='store', default='secure.json')
-    parser.addoption('--device', action='store', default='')
-    parser.addoption('--browser', action='store', default='chromium')
     parser.addini('db_path', help='path to sql db file', default='E:\\Python\\TestMe\\db.sqlite3')
     parser.addini('headless', help='run tests in headless mode', default='False')
 

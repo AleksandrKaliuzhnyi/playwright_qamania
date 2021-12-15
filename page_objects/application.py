@@ -1,4 +1,5 @@
 import logging
+import allure
 from playwright.sync_api import Browser
 from playwright.sync_api import Route, Request, ConsoleMessage, Dialog
 from page_objects.test_cases import TestCases
@@ -25,16 +26,19 @@ class App:
         self.page.on('console', console_handler)
         self.page.on('dialog', dialog_handler)
 
+    @allure.step
     def goto(self, endpoint: str, use_base_url=True):
         if use_base_url:
             self.page.goto(self.base_url + endpoint)
         else:
             self.page.goto(endpoint)
 
+    @allure.step
     def navigate_to(self, menu: str):
         self.page.click(f"css=header >> text={menu}")
         self.page.wait_for_load_state()
 
+    @allure.step
     def login(self, login: str, password: str):
         self.page.fill("input[name=\"username\"]", login)
         self.page.fill("input[name=\"password\"]", password)
@@ -45,15 +49,19 @@ class App:
         self.page.fill("textarea[name=\"description\"]", test_description)
         self.page.click("input:has-text(\"Create\")")
 
+    @allure.step
     def click_menu_button(self):
         self.page.click('.menuBtn')
 
+    @allure.step
     def is_menu_button_visible(self):
         return self.page.is_visible('.menuBtn')
 
+    @allure.step
     def get_location(self):
         return self.page.text_content('.position')
 
+    @allure.step
     def intercept_requests(self, url: str, payload: str):
         def handler(route: Route, request: Request):
             # change the response from the server
@@ -61,16 +69,20 @@ class App:
 
         self.page.route(url, handler=handler)
 
+    @allure.step
     def stop_intercept(self, url: str):
         self.page.unroute(url)
 
+    @allure.step
     def refresh_dashboard(self):
         self.page.click('input')
         self.page.wait_for_event('response')
 
+    @allure.step
     def get_total_tests_stats(self):
         return self.page.text_content('.total >> span')
 
+    @allure.step
     def close(self):
         self.page.close()
         self.context.close()
