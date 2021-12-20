@@ -13,10 +13,22 @@ from helpers.db import DataBase
 
 
 @fixture(autouse=True, scope='session')
-def preconditions():
+def preconditions(request):
     logging.info('Preconditions started')
+    base_url = request.config.getini('base_url')
+    secure = request.config.getoption('--secure')
+    config = load_config(secure)
     yield
     logging.info('Postconditions started')
+    web = WebService(base_url)
+    web.login(**config['users']['UserRole3'])
+    for test in request.node.items:
+        if len(test.own_markers) > 0:
+            if test.own_markers[0].name == 'test_id':
+                if test.result_call.passed:
+                    web.report_test(test.own_markers[0].args[0], 'PASS')
+                if test.result_call.failed:
+                    web.report_test(test.own_markers[0].args[0], 'FAIL')
 
 
 @fixture(scope='session')
@@ -57,17 +69,8 @@ def get_browser(get_playwright, request):
 
 @fixture(scope='session')
 def desktop_app(get_browser, request):
-    # conditions if use addoption
-    # base_url = request.config.getoption('--base_url')
-    # conditions if use getini
-    # base_url = request.config.getini('base_url')
-    # conditions if use addoption
-    # conditions if use json config
     base_url = request.config.getoption('--base_url')
     app = App(get_browser, base_url=base_url, **BROWSER_OPTIONS)
-    # conditions if use settings.py
-    # app = App(get_playwright,  base_url=settings.BASE_URL)
-    app.goto('/')
     yield app
     app.close()
 
@@ -103,12 +106,6 @@ def desktop_app_bob(get_browser, request):
 
 @fixture(scope='session', params=['iPhone 11', 'Pixel 2'], ids=['iPhone 11', 'Pixel 2'])
 def mobile_app(get_playwright, get_browser, request):
-    # conditions if use addoption
-    # base_url = request.config.getoption('--base_url')
-    # conditions if use getini
-    # base_url = request.config.getini('base_url')
-    # conditions if use addoption
-    # conditions if use json config
     base_url = request.config.getoption('--base_url')
     device = request.config.param
     device_config = get_playwright.devices.get(device)
@@ -117,8 +114,6 @@ def mobile_app(get_playwright, get_browser, request):
     else:
         device_config = BROWSER_OPTIONS
     app = App(get_browser, base_url=base_url, **device_config)
-    # conditions if use settings.py
-    # app = App(get_playwright,  base_url=settings.BASE_URL)
     app.goto('/')
     yield app
     app.close()

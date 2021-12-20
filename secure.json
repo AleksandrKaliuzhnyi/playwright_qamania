@@ -7,6 +7,10 @@
         "UserRole2": {
             "login": "bob",
             "password": "Qamania123"
+        },
+        "UserRole3": {
+            "login": "charlie",
+            "password": "Qamania123"
         }
     }
 }
