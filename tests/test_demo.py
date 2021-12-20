@@ -1,6 +1,8 @@
 import allure
+from pytest import mark
 
 
+@mark.smoke
 @allure.title('test_wait_more_30_sec')
 def test_wait_more_30_sec(desktop_app_auth):
     desktop_app_auth.navigate_to('Demo pages')
@@ -8,6 +10,7 @@ def test_wait_more_30_sec(desktop_app_auth):
     assert desktop_app_auth.demo_pages.check_wait_page()
 
 
+@mark.smoke
 @allure.title('test_ajax')
 def test_ajax(desktop_app_auth):
     desktop_app_auth.navigate_to('Demo pages')
@@ -15,6 +18,7 @@ def test_ajax(desktop_app_auth):
     assert 2 == desktop_app_auth.demo_pages.get_ajax_responses_count()
 
 
+@mark.smoke
 @allure.title('test_handlers')
 def test_handlers(desktop_app_auth):
     desktop_app_auth.navigate_to('Demo pages')
